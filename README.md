@@ -2,7 +2,7 @@
 
 A fast, lightweight Chrome extension that automatically formats and syntax-highlights JSON, with collapsible nodes and a built-in popup formatter.
 
-<img width="519" height="601" alt="image" src="https://github.com/user-attachments/assets/bb04a03c-b67a-40f7-8385-7fa95744652c" />
+<img width="519" height="600" alt="image" src="https://github.com/user-attachments/assets/0d607a0c-0e2b-4647-8c5c-07ecc005a0bb" />
 
 ---
 
