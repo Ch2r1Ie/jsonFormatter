@@ -15,8 +15,6 @@ A fast, lightweight Chrome extension that automatically formats and syntax-highl
 | **Syntax highlighting** | Keys, strings, numbers, booleans, and null values are color-coded |
 | **Collapsible nodes** | Click `▼`/`▶` to collapse or expand any object or array |
 | **Collapse / Expand All** | One-click to collapse or expand the entire tree |
-| **Copy Formatted** | Copies pretty-printed JSON (2-space indent) to clipboard |
-| **Copy Minified** | Copies compact JSON (no whitespace) to clipboard |
 | **Error validation** | Shows the exact parse error message for invalid JSON |
 | **Auto-format on paste** | The popup automatically formats when you paste JSON |
 
