@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>JSON Formatter</title>
+  <style>
+    /* ── Design tokens ──────────────────────────────────────────────────── */
+    :root {
+      --bg:             #ffffff;
+      --surface:        #f8fafc;
+      --border:         #e2e8f0;
+      --border-focus:   #818cf8;
+      --text:           #0f172a;
+      --muted:          #64748b;
+      --accent:         #4f46e5;
+      --accent-hover:   #4338ca;
+      --accent-shadow:  rgba(79, 70, 229, 0.28);
+      --error-bg:       #fef2f2;
+      --error-border:   #fecaca;
+      --error-text:     #b91c1c;
+      --success:        #059669;
+      --header-bg:      #0f172a;
+      --r-sm: 5px;
+      --r-md: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 520px;
+      min-height: 320px;
+      max-height: 640px;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      background: var(--header-bg);
+      flex-shrink: 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .logo-icon {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #a5b4fc;
+      background: rgba(165, 180, 252, 0.12);
+      border: 1px solid rgba(165, 180, 252, 0.2);
+      padding: 2px 8px;
+      border-radius: var(--r-sm);
+      letter-spacing: 1px;
+    }
+
+    .logo-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: 0.1px;
+    }
+
+    #header-actions { display: flex; gap: 5px; }
+
+    .btn-ghost {
+      padding: 4px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--r-sm);
+      background: transparent;
+      color: #94a3b8;
+      font-size: 11px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.07);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .btn-ghost:disabled { opacity: 0.3; cursor: default; }
+
+    /* ── Input section ───────────────────────────────────────────────────── */
+    #input-section {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      padding: 14px 16px 12px;
+      gap: 10px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    textarea {
+      width: 100%;
+      height: 118px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      resize: vertical;
+      font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      outline: none;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    textarea::placeholder { color: #94a3b8; }
+    textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18);
+    }
+    textarea.has-error {
+      border-color: #f87171;
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+    }
+
+    #input-row { display: flex; gap: 8px; align-items: center; }
+
+    .btn-primary {
+      padding: 7px 20px;
+      border: none;
+      border-radius: var(--r-sm);
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+      box-shadow: 0 1px 3px var(--accent-shadow), 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 8px var(--accent-shadow);
+    }
+    .btn-primary:active { transform: translateY(1px); box-shadow: none; }
+
+    .btn-secondary {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: var(--surface); border-color: #cbd5e1; color: var(--text); }
+    .btn-secondary:active { background: #e2e8f0; }
+
+    /* ── Error banner ────────────────────────────────────────────────────── */
+    #error-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      background: var(--error-bg);
+      border-bottom: 1px solid var(--error-border);
+      color: var(--error-text);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    #error-banner.visible { display: flex; }
+    .error-icon { font-size: 13px; flex-shrink: 0; }
+
+    /* ── Output section ──────────────────────────────────────────────────── */
+    #output-section {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      animation: slideIn 0.18s ease;
+    }
+    #output-section.visible { display: flex; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #output-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    #output-info {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .info-badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 99px;
+      background: rgba(79, 70, 229, 0.1);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    #output-actions { display: flex; gap: 6px; }
+
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 11px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(79, 70, 229, 0.05);
+    }
+    .btn-copy.copied {
+      border-color: var(--success);
+      color: var(--success);
+      background: rgba(5, 150, 105, 0.06);
+    }
+
+    /* ── Output scroll area ──────────────────────────────────────────────── */
+    #output-scroll {
+      flex: 1;
+      overflow: auto;
+      padding: 12px 16px 24px;
+    }
+
+    /* ── JSON tree tokens ────────────────────────────────────────────────── */
+    .jf-root {
+      white-space: nowrap;
+      font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+
+    .jf-row { padding-left: 20px; }
+
+    .jf-toggle {
+      display: inline-block;
+      width: 14px;
+      cursor: pointer;
+      color: #94a3b8;
+      user-select: none;
+      font-size: 9px;
+      line-height: 1;
+      vertical-align: middle;
+      margin-right: 2px;
+      transition: color 0.1s;
+    }
+    .jf-toggle:hover { color: var(--accent); }
+
+    .jf-brace   { color: #475569; font-weight: 600; }
+    .jf-summary {
+      color: #94a3b8;
+      font-style: italic;
+      cursor: pointer;
+      padding: 0 5px;
+      border-radius: 3px;
+      transition: background 0.1s;
+    }
+    .jf-summary:hover { background: #f1f5f9; }
+
+    /* Syntax colours — warmer, more distinct palette */
+    .jf-key     { color: #7c3aed; } /* violet  */
+    .jf-string  { color: #b45309; } /* amber   */
+    .jf-number  { color: #0369a1; } /* sky     */
+    .jf-boolean { color: #0891b2; } /* cyan    */
+    .jf-null    { color: #94a3b8; } /* slate   */
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">{ }</span>
+      <span class="logo-text">JSON Formatter</span>
+    </div>
+    <div id="header-actions">
+      <button class="btn-ghost" id="btn-collapse" disabled>Collapse All</button>
+      <button class="btn-ghost" id="btn-expand"   disabled>Expand All</button>
+    </div>
+  </header>
+
+  <!-- Input -->
+  <div id="input-section">
+    <textarea id="json-input" placeholder="Paste JSON here…" spellcheck="false"></textarea>
+    <div id="input-row">
+      <button class="btn-primary" id="btn-format">Format</button>
+      <button class="btn-secondary" id="btn-clear">Clear</button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-banner">
+    <span class="error-icon">⚠</span>
+    <span id="error-msg"></span>
+  </div>
+
+  <!-- Output -->
+  <div id="output-section">
+    <div id="output-toolbar">
+      <div id="output-info">
+        <span id="output-badge" class="info-badge"></span>
+        <span id="output-detail"></span>
+      </div>
+      <div id="output-actions">
+        <button class="btn-copy" id="btn-copy-json">⎘ Copy JSON</button>
+      </div>
+    </div>
+    <div id="output-scroll">
+      <div id="json-output"></div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

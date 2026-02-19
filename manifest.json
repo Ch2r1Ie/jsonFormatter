@@ -1,0 +1,27 @@
+
+{
+  "manifest_version": 3,
+  "name": "JSON Formatter",
+  "version": "1.0",
+  "description": "Automatically format and syntax-highlight JSON in the browser. Includes collapsible nodes, copy button, and a popup formatter.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "JSON Formatter"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "renderer.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
+
